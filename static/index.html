@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智银 · AI Banking Agent</title>
+<style>
+  :root {
+    --bg:#0a101d; --glass:rgba(22,32,51,.72); --glass2:rgba(16,24,37,.82);
+    --line:rgba(74,111,165,.22); --line2:rgba(74,111,165,.38);
+    --ink:#eaf0f8; --muted:#92a7c4; --dim:#5f7492;
+    --green:#34d399; --yellow:#fbbf24; --red:#f87171;
+    --blue:#38bdf8; --blue2:#6366f1; --gold:#fcd34d;
+    --grad:linear-gradient(135deg,#38bdf8,#6366f1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:rgba(74,111,165,.35); border-radius:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  body {
+    background:var(--bg); color:var(--ink); height:100vh; display:flex; flex-direction:column; overflow:hidden;
+    background-image:
+      radial-gradient(900px 500px at 12% -10%, rgba(56,189,248,.13), transparent 60%),
+      radial-gradient(800px 480px at 88% 108%, rgba(99,102,241,.15), transparent 60%);
+  }
+  button { cursor:pointer; border:none; font-family:inherit; }
+  header {
+    padding:12px 22px; display:flex; align-items:center; gap:14px;
+    background:rgba(13,20,35,.85); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line); z-index:10;
+  }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo .mark {
+    width:32px; height:32px; border-radius:10px; background:var(--grad);
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+    box-shadow:0 4px 14px rgba(56,189,248,.35);
+  }
+  .logo h1 { font-size:16px; font-weight:700; letter-spacing:.5px;
+    background:linear-gradient(90deg,#7dd3fc,#a5b4fc); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .pill {
+    font-size:12px; color:var(--muted); background:rgba(56,189,248,.07);
+    border:1px solid var(--line); border-radius:999px; padding:5px 14px; white-space:nowrap;
+  }
+  .pill b { color:var(--gold); font-size:13px; margin-left:2px; }
+  #datePill { color:#a5b4fc; }
+  .reset-btn {
+    background:rgba(248,113,113,.1); color:#fca5a5; border:1px solid rgba(248,113,113,.3);
+    font-size:12px; padding:6px 14px; border-radius:999px; transition:.2s;
+  }
+  .reset-btn:hover { background:rgba(248,113,113,.2); }
+  .wrap { flex:1; display:flex; min-height:0; }
+  .scene-col { width:248px; overflow-y:auto; padding:16px 12px; background:var(--glass2);
+    backdrop-filter:blur(14px); border-right:1px solid var(--line); }
+  .scene-col h2 { font-size:10.5px; color:var(--dim); letter-spacing:2px; padding:0 6px 12px; }
+  .scene { margin-bottom:14px; }
+  .scene .t { font-size:12px; font-weight:700; color:var(--muted); padding:4px 8px; display:flex; align-items:center; gap:7px; }
+  .scene .t i { width:6px; height:6px; border-radius:50%; background:var(--grad); box-shadow:0 0 8px rgba(56,189,248,.6); }
+  .cmd {
+    display:block; width:100%; text-align:left; color:var(--ink); font-size:12px;
+    background:rgba(255,255,255,.03); border:1px solid var(--line);
+    padding:8px 11px; margin:5px 0; border-radius:10px; transition:.18s;
+  }
+  .cmd:hover { border-color:rgba(56,189,248,.55); background:rgba(56,189,248,.08);
+    transform:translateX(3px); box-shadow:0 2px 10px rgba(56,189,248,.12); }
+  .cmd small { color:var(--dim); display:block; font-size:10.5px; margin-top:2px; }
+  .chat-col { flex:1; display:flex; flex-direction:column; min-width:0; }
+  #chat { flex:1; overflow-y:auto; padding:24px 26px; scroll-behavior:smooth; }
+  .msg { max-width:78%; padding:11px 16px; border-radius:14px; margin-bottom:14px;
+    font-size:14px; line-height:1.7; white-space:pre-wrap; word-break:break-word;
+    animation:pop .28s cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes pop { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+  .msg.user { background:linear-gradient(135deg,#2563eb,#4f46e5); margin-left:auto;
+    border-bottom-right-radius:4px; box-shadow:0 4px 16px rgba(37,99,235,.3); }
+  .msg.bot { background:var(--glass); border:1px solid var(--line); border-bottom-left-radius:4px;
+    backdrop-filter:blur(8px); }
+  .hero { background:var(--glass); border:1px solid var(--line2); border-radius:16px;
+    padding:22px 24px; margin-bottom:18px; backdrop-filter:blur(10px); animation:pop .35s; }
+  .hero h3 { font-size:16px; margin-bottom:6px;
+    background:linear-gradient(90deg,#7dd3fc,#a5b4fc); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p { font-size:12.5px; color:var(--muted); line-height:1.7; }
+  .hero .risk-legend { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .rl { font-size:11px; padding:4px 10px; border-radius:8px; border:1px solid var(--line); color:var(--muted); }
+  .rl b { margin-right:4px; }
+  .rl .g { color:var(--green); } .rl .y { color:var(--yellow); } .rl .r { color:var(--red); }
+  .card { background:var(--glass); border:1px solid var(--line2); border-radius:14px;
+    padding:14px 18px; margin-bottom:14px; max-width:78%; font-size:14px;
+    backdrop-filter:blur(10px); animation:pop .28s; position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+  .card.yellow::before { background:var(--yellow); box-shadow:0 0 12px var(--yellow); }
+  .card.red::before { background:var(--red); box-shadow:0 0 12px var(--red); }
+  .card .tag { display:inline-block; font-size:11px; padding:2px 9px; border-radius:999px; margin-right:8px; font-weight:600; }
+  .tag.yellow { background:rgba(251,191,36,.14); color:var(--yellow); }
+  .tag.red { background:rgba(248,113,113,.14); color:var(--red); }
+  .card .btns { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-ok { background:linear-gradient(135deg,#059669,#10b981); color:#fff; padding:7px 18px; font-size:13px; border-radius:9px; }
+  .btn-no { background:rgba(148,163,184,.15); color:#cbd5e1; padding:7px 18px; font-size:13px; border-radius:9px; }
+  .btn-mfa { background:var(--grad); color:#fff; padding:7px 18px; font-size:13px; border-radius:9px; }
+  .amt { font-size:17px; font-weight:800; color:#fca5a5; }
+  .warn-strip { display:flex; align-items:center; gap:6px; margin-bottom:10px; padding:5px 10px;
+    border-radius:8px; font-size:11px; font-weight:700; color:#fff;
+    background:linear-gradient(90deg, rgba(220,55,75,.92), rgba(239,68,68,.5)); }
+  #histBar { padding:0 26px 8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .hchip { font-size:11px; color:var(--muted); background:rgba(255,255,255,.04);
+    border:1px solid var(--line); border-radius:999px; padding:4px 11px; cursor:pointer; transition:.15s; }
+  .hchip:hover { border-color:rgba(56,189,248,.5); color:#7dd3fc; }
+  .hchip-label { font-size:10.5px; color:var(--dim); padding:4px 4px; }
+  .inputbar { display:flex; gap:10px; padding:10px 26px 18px; }
+  #inp { flex:1; background:var(--glass2); border:1px solid var(--line2); color:var(--ink);
+    border-radius:12px; padding:12px 16px; font-size:14px; outline:none; transition:.2s; }
+  #inp:focus { border-color:rgba(56,189,248,.6); box-shadow:0 0 0 3px rgba(56,189,248,.12); }
+  #send { background:var(--grad); color:#fff; padding:0 26px; font-size:14px; border-radius:12px;
+    font-weight:600; box-shadow:0 4px 14px rgba(56,189,248,.35); transition:.2s; }
+  .right-col { width:340px; background:var(--glass2); backdrop-filter:blur(14px);
+    border-left:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+  .right-col h2 { font-size:10.5px; color:var(--dim); letter-spacing:2px; padding:14px 16px 6px; }
+  #audit { flex:1; overflow-y:auto; padding:2px 16px 14px; font-size:11.5px; }
+  .log { padding:7px 9px; border-bottom:1px solid rgba(74,111,165,.12); color:var(--muted); line-height:1.55;
+    display:flex; gap:6px; }
+  .log .ev { color:var(--blue); flex-shrink:0; }
+  .log.execute .ev { color:var(--green); }
+  .log.injection, .log.blocked { color:var(--red); }
+  .log .ts { color:var(--dim); margin-right:6px; font-size:10.5px; flex-shrink:0; }
+  @media (max-width: 1080px) { .right-col { width:280px; } }
+  @media (max-width: 920px) { .scene-col { display:none; } }
+  @media (max-width: 720px) { .right-col { display:none; } .msg,.card { max-width:92%; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="mark">🏦</div>
+    <h1>智银 · AI Banking Agent</h1>
+  </div>
+  <span class="pill" id="userPill">您好 <b id="uname">--</b></span>
+  <span class="pill" id="datePill">📅 <b id="today">--</b></span>
+  <span class="pill">活期余额<b id="bal">--</b></span>
+  <span style="flex:1"></span>
+  <button class="reset-btn" onclick="resetAll()">↺ 重置数据</button>
+</header>
+<div class="wrap">
+  <aside class="scene-col" id="scenes"></aside>
+  <div class="chat-col">
+    <div id="chat"></div>
+    <div id="histBar"></div>
+    <div class="inputbar">
+      <input id="inp" placeholder="用自然语言描述需求，如：给妈妈转500 / 一个月后 / 查余额" onkeydown="if(event.key==='Enter')send()">
+      <button id="send" onclick="send()">发送 ➤</button>
+    </div>
+  </div>
+  <aside class="right-col">
+    <h2>操作审计 · 人话日志</h2>
+    <div id="audit"></div>
+  </aside>
+</div>
+<script>
+const sid = 'sess-' + Math.random().toString(36).slice(2, 10);
+const chat = document.getElementById('chat'), inp = document.getElementById('inp'),
+      auditBox = document.getElementById('audit'), histBar = document.getElementById('histBar');
+let history = [];
+
+const SCENES = [
+  { t: '💸 智能转账', cmds: [
+    ['给妈妈转500，备注生活费', '按人名转账'],
+    ['给我爱人转2000', '大额转账'],
+    ['每个月给房东转3500房租', '定时转账'],
+    ['给妈妈转800，再给爸爸转800', '多笔拆分'],
+  ]},
+  { t: '📊 账单分析', cmds: [
+    ['分析一下这个月的账单', '消费分类'],
+    ['查流水', '交易明细'],
+    ['有异常交易吗', '异常识别'],
+  ]},
+  { t: '📈 理财', cmds: [
+    ['推荐适合我的理财', '风测匹配'],
+    ['买1000元的R2', '口语申购'],
+    ['我的理财收益', '持仓查询'],
+  ]},
+  { t: '💳 卡片', cmds: [
+    ['我有几张银行卡', '卡片列表'],
+    ['再办一张卡', '新开卡'],
+    ['卡丢了', '挂失（会问哪张）'],
+  ]},
+  { t: '🔁 订阅', cmds: [
+    ['我有哪些订阅', '订阅列表'],
+    ['取消爱奇艺订阅', '一键取消'],
+    ['恢复QQ音乐', '重新订阅'],
+  ]},
+  { t: '🎂 跨场景', cmds: [
+    ['我爱人生日快到了', '生日联动'],
+    ['一个月后', '时间快进'],
+    ['我发了3万年终奖帮我规划', '年终奖DAG'],
+  ]},
+];
+const sceneBox = document.getElementById('scenes');
+sceneBox.innerHTML = '<h2>场景快捷指令</h2>';
+SCENES.forEach(s => {
+  const g = document.createElement('div'); g.className = 'scene';
+  g.innerHTML = `<div class="t"><i></i>${s.t}</div>`;
+  s.cmds.forEach(([c, hint]) => {
+    const b = document.createElement('button'); b.className = 'cmd';
+    b.innerHTML = `${c}<small>${hint}</small>`;
+    b.onclick = () => send(c);
+    g.appendChild(b);
+  });
+  sceneBox.appendChild(g);
+});
+
+function scrollBottom(){ chat.scrollTop = chat.scrollHeight; }
+function addMsg(text, who) {
+  const d = document.createElement('div'); d.className = 'msg ' + who; d.textContent = text;
+  chat.appendChild(d); scrollBottom(); return d;
+}
+function addHero() {
+  const d = document.createElement('div'); d.className = 'hero';
+  d.innerHTML = `<h3>您好，我是智银 AI 智能体</h3>
+    <p>点击左侧场景快捷指令体验，或直接输入自然语言。所有操作可中断、可审计。</p>
+    <div class="risk-legend">
+      <span class="rl"><b class="g">●</b>绿色 · 自动执行</span>
+      <span class="rl"><b class="y">●</b>黄色 · 需确认</span>
+      <span class="rl"><b class="r">●</b>红色 · 短信/人脸强验证</span>
+    </div>`;
+  chat.appendChild(d); scrollBottom();
+}
+
+function addCard(ui) {
+  const d = document.createElement('div'); d.className = 'card ' + (ui.risk||'yellow');
+  const risk = ui.risk || 'yellow';
+  const label = risk === 'red' ? '红色 · 强验证' : '黄色 · 需确认';
+  const stepHtml = String(ui.title || '').replace(/¥[\d,]+(\.\d+)?/g, m => `<span class="amt">${m}</span>`);
+  d.innerHTML = (risk === 'red'
+      ? `<div class="warn-strip">⚠️ 高风险操作 · 须通过多因子验证后才能执行</div>` : '')
+    + `<span class="tag ${risk}">${label}</span><b>${stepHtml}</b><div class="btns"></div>`;
+  const btns = d.querySelector('.btns');
+  if (ui.type === 'confirm') {
+    const ok = document.createElement('button'); ok.className='btn-ok'; ok.textContent='✓ 确认执行';
+    ok.onclick=()=>{d.remove();send('确认');};
+    const no = document.createElement('button'); no.className='btn-no'; no.textContent='取消';
+    no.onclick=()=>{d.remove();send('取消');};
+    btns.append(ok, no);
+  } else if (ui.type === 'mfa_sms' || ui.type === 'mfa_face_button') {
+    const face = document.createElement('button'); face.className='btn-mfa'; face.textContent='😊 人脸验证(模拟)';
+    face.onclick = async () => { d.remove(); addMsg('【人脸验证(模拟)】', 'user');
+      const r = await fetch('/mfa/face', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({session_id: sid, message: ''})});
+      const j = await r.json(); addMsg(j.reply, 'bot'); refresh(); };
+    const no = document.createElement('button'); no.className='btn-no'; no.textContent='取消';
+    no.onclick=()=>{d.remove();send('取消');};
+    btns.append(face, no);
+  }
+  chat.appendChild(d); scrollBottom();
+}
+
+function renderHist() {
+  if (!history.length) { histBar.innerHTML=''; return; }
+  histBar.innerHTML = '<span class="hchip-label">最近：</span>' +
+    history.slice(-5).map(h => `<span class="hchip" onclick="send(this.dataset.q)" data-q="${h.replace(/"/g,'&quot;')}">${h}</span>`).join('');
+}
+
+async function post(url, body) {
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(Object.assign({session_id: sid}, body||{}))});
+  return r.json();
+}
+function render(r) {
+  if (r.reply) addMsg(r.reply, 'bot');
+  if (r.ui && r.ui.length) r.ui.forEach(addCard);
+  refresh();
+}
+async function send(text) {
+  const msg = text || inp.value.trim(); if (!msg) return;
+  addMsg(msg, 'user'); inp.value = '';
+  history.push(msg); if (history.length > 5) history = history.slice(-5); renderHist();
+  try {
+    const r = await post('/chat', {message: msg});
+    render(r);
+  } catch (e) { addMsg('网络异常', 'bot'); }
+}
+async function refresh() {
+  try {
+    const o = await fetch('/overview').then(r=>r.json());
+    document.getElementById('uname').textContent = o.name || '--';
+    document.getElementById('today').textContent = o.today || '--';
+    document.getElementById('bal').textContent = ' ¥' + (o.balance||0).toLocaleString('zh-CN',{minimumFractionDigits:2});
+    const a = await fetch('/audit?limit=40').then(r=>r.json());
+    auditBox.innerHTML = (a.logs||[]).slice().reverse().map(l => {
+      const ev = l.event || '?';
+      let txt = typeof l.detail === 'string' ? l.detail : JSON.stringify(l.detail||'');
+      return `<div class="log ${ev}"><span class="ts">${(l.ts||'').slice(11,16)}</span><span class="ev">${ev}</span><span>${txt}</span></div>`;
+    }).join('');
+    auditBox.scrollTop = auditBox.scrollHeight;
+  } catch(e) {}
+}
+async function resetAll(){ await post('/reset'); chat.innerHTML=''; addHero(); refresh(); }
+addHero();
+refresh();
+</script>
+</body>
+</html>
